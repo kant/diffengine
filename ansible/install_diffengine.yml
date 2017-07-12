@@ -1,6 +1,62 @@
 ---
-- hosts: all
+- hosts: localhost
+  connection: local
+  vars_files:
+    - aws_variables.yml
   tasks:
+      #  - name: create 3c2 key
+      #ec2_key:
+      #name: '{{ environment_public_ssh_key_name }}'
+      #region: '{{ vpc_region }}'
+      #with_file: '/Users/kayiwa/.ssh/mykeykeypair.pem'
+
+  - name: create an ec2 instance
+    ec2:
+      state: present
+      image: '{{ ami_base_image_id }}'
+      instance_type: '{{ aws_instance }}'
+      wait: 'yes'
+      wait_timeout: 600
+      key_name: '{{ environment_public_ssh_key_name }}'
+      region: '{{ vpc_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      group_id: 'sg-6bcb6b16'
+    register: ec2
+
+  - debug: var=ec2
+  - debug: var=ec2.instances
+  - debug: var=ec2.instances[0].public_ip
+
+  - name: add host to manage remotely
+    add_host:
+        hostname: '{{ item.public_ip }}'
+        groupname: 'diffenginehost'
+    with_items: '{{ ec2.instances }}'
+
+  - name: wait for instance to listen for SSH
+    wait_for:
+        state: started
+        host: '{{ item.public_ip }}'
+        port: 22
+        delay: 10
+        timeout: 360
+    with_items: '{{ ec2.instances }}'
+
+- hosts: diffenginehost
+  gather_facts: no
+  user: ubuntu
+  tasks:
+
+  - name: install minimal python
+    raw: sudo bash -c "test -e /usr/bin/python || (apt install -qy python-minimal aptitude)"
+
+  - name: update cache
+    apt:
+        update_cache: yes
+        upgrade: yes
+        cache_valid_time: 3600
+
   - name: register phantomjs install
     stat:
         path: /usr/local/bin/phantomjs
@@ -10,6 +66,7 @@
     apt:
         name: '{{ item }}'
         state: present
+        update_cache: yes
     with_items:
         - python3-pip
         - libfontconfig
