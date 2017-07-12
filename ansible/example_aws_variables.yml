@@ -1,0 +1,8 @@
+---
+ami_base_image_id: 'ami-d6557ac0'
+aws_instance: 't1.micro'
+instance_security_groups: 'sg-namefrom'
+environment_public_ssh_key_name: 'ansshkey'
+vpc_region: 'us-east-1'
+aws_access_key: 'AYOURAWSACCESSKEYQ' 
+aws_secret_key: 'vsurelyyouWerentexpectingMykeywereyouKN'

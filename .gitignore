@@ -11,3 +11,4 @@ diffengine.egg-info
 build
 Pip*
 .venv
+aws_variables.yml
