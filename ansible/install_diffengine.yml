@@ -4,11 +4,19 @@
   vars_files:
     - aws_variables.yml
   tasks:
-      #  - name: create 3c2 key
-      #ec2_key:
-      #name: '{{ environment_public_ssh_key_name }}'
-      #region: '{{ vpc_region }}'
-      #with_file: '/Users/kayiwa/.ssh/mykeykeypair.pem'
+  - name: create security group
+    ec2_group:
+      name: docnow
+      description: diffengine ssh rules
+      region: '{{ vpc_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+      state: present
 
   - name: create an ec2 instance
     ec2:
