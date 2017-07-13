@@ -1,0 +1,18 @@
+---
+#- hosts: all
+  vars_files:
+    - aws_variables.yml
+  tasks:
+  - name: create an ec2 instance
+    ec2:
+        state: present
+        image: '{{ ami_base_image_id }}'
+        instance_type: '{{ aws_instance }}'
+        group: '{{ instance_security_groups }}'
+        key_name: '{{ environment_public_ssh_key_name }}'
+        assign_public_ip: 'yes'
+        wait: 'yes'
+        wait_timeout: 600
+        region: '{{ vpc_region }}'
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
